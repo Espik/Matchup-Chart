@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using KModkit;
 using System.Text.RegularExpressions;
 
-public class MatchupChart : MonoBehaviour
-{
+public class MatchupChart : MonoBehaviour {
     // Module info
     public KMAudio Audio;
     public KMBombInfo Bomb;
@@ -56,34 +54,29 @@ public class MatchupChart : MonoBehaviour
 
 
     // Ran as bomb loads
-    private void Awake()
-    {
+    private void Awake() {
         moduleId = moduleIdCounter++;
 
-        for (int i = 0; i < TypeDisplays.Length; i++)
-        {
+        for (int i = 0; i < TypeDisplays.Length; i++) {
             int j = i;
             TypeDisplays[i].OnInteract += delegate () { TypeDisplayPressed(j); return false; };
         }
 
-        for (int i = 0; i < Arrows.Length; i++)
-        {
+        for (int i = 0; i < Arrows.Length; i++) {
             int j = i;
             Arrows[i].OnInteract += delegate () { ArrowButtonPressed(j); return false; };
         }
     }
 
     // Gets information
-    private void Start()
-    {
+    private void Start() {
         lastDigit = Bomb.GetSerialNumberNumbers().Last();
         InitTypes();
 
         selectedIndex = UnityEngine.Random.Range(0, TYPE_SELECTION[typeTable].Length);
         UpdateInputDisplay();
 
-        for (int i = 0; i < selectedTypes.Length; i++)
-        {
+        for (int i = 0; i < selectedTypes.Length; i++) {
             selectedTypes[i] = NO_TYPE;
             solutionTypes[i] = NO_TYPE;
             screenLocked[i] = false;
@@ -95,8 +88,7 @@ public class MatchupChart : MonoBehaviour
     }
 
     // Initiates module information
-    private void InitTypes()
-    {
+    private void InitTypes() {
         TYPE_SELECTION[0] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15 };
         TYPE_SELECTION[1] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
         TYPE_SELECTION[2] = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
@@ -122,8 +114,7 @@ public class MatchupChart : MonoBehaviour
         TYPE_CHART[17] = new int[] { 0, 1, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 1, 1, 0, -1 }; // Fairy
         TYPE_CHART[18] = new int[] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }; // Stellar
 
-        if (lastDigit == 1)
-        { // Gen 1
+        if (lastDigit == 1) { // Gen 1
             typeTable = 0;
             Debug.LogFormat("[Matchup Chart #{0}] Last digit of the serial number is 1. Using table 1 in the manual.", moduleId);
 
@@ -134,8 +125,7 @@ public class MatchupChart : MonoBehaviour
             TYPE_CHART[16] = new int[] { 0, 2, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 2, 2, -1 }; // Dark
         }
 
-        else if (lastDigit >= 2 && lastDigit <= 5)
-        { // Gen 2-5
+        else if (lastDigit >= 2 && lastDigit <= 5) { // Gen 2-5
             typeTable = 1;
             Debug.LogFormat("[Matchup Chart #{0}] Last digit of the serial number is between 2-5. Using table 2 in the manual.", moduleId);
 
@@ -146,8 +136,7 @@ public class MatchupChart : MonoBehaviour
             TYPE_CHART[16] = new int[] { 0, 2, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 0, 0, 2, 2, -1 }; // Dark
         }
 
-        else
-        { // Gen 6+
+        else { // Gen 6+
             typeTable = 2;
             Debug.LogFormat("[Matchup Chart #{0}] Last digit of the serial number doesn't meet either rule. Using table 3 in the manual.", moduleId);
 
@@ -160,50 +149,41 @@ public class MatchupChart : MonoBehaviour
     }
 
     // Creates the grid
-    private void CreateGrid()
-    {
+    private void CreateGrid() {
         // Creates an intended solution
         var typeCount = 0;
         var typeToAdd = 0;
         var valid = true;
 
-        do
-        {
+        do {
             valid = true;
-            typeToAdd = UnityEngine.Random.Range(0, TYPE_SELECTION[typeTable].Length);
+            typeToAdd = TYPE_SELECTION[typeTable][UnityEngine.Random.Range(0, TYPE_SELECTION[typeTable].Length)];
 
-            for (int i = 0; i < typeCount; i++)
-            {
-                if (solutionTypes[i] == typeToAdd)
-                {
+            for (int i = 0; i < typeCount; i++) {
+                if (solutionTypes[i] == typeToAdd) {
                     valid = false;
                     break;
                 }
             }
 
-            if (valid)
-            {
+            if (valid) {
                 solutionTypes[typeCount] = typeToAdd;
                 typeCount++;
             }
         } while (typeCount < 4);
 
-        do
-        {
+        do {
             valid = true;
-            typeToAdd = UnityEngine.Random.Range(0, TYPE_SELECTION[typeTable].Length);
+            typeToAdd = TYPE_SELECTION[typeTable][UnityEngine.Random.Range(0, TYPE_SELECTION[typeTable].Length)];
 
-            for (int i = 4; i < typeCount; i++)
-            {
-                if (solutionTypes[i] == typeToAdd)
-                {
+            for (int i = 4; i < typeCount; i++) {
+                if (solutionTypes[i] == typeToAdd) {
                     valid = false;
                     break;
                 }
             }
 
-            if (valid)
-            {
+            if (valid) {
                 solutionTypes[typeCount] = typeToAdd;
                 typeCount++;
             }
@@ -211,8 +191,7 @@ public class MatchupChart : MonoBehaviour
 
 
         // Indicates the matchups on the grid
-        for (int i = 0; i < MatchupTiles.Length; i++)
-        {
+        for (int i = 0; i < MatchupTiles.Length; i++) {
             var matchup = TYPE_CHART[solutionTypes[4 + i / 4]][solutionTypes[i % 4]];
 
             matchupValues[i] = matchup;
@@ -225,15 +204,14 @@ public class MatchupChart : MonoBehaviour
         // Logs the grid
         Debug.LogFormat("[Matchup Chart #{0}] The module generated as such:", moduleId);
 
-        for (int i = 0; i < MatchupTiles.Length; i += 4)
-        {
+        for (int i = 0; i < MatchupTiles.Length; i += 4) {
             Debug.LogFormat("[Matchup Chart #{0}] {1} {2} {3} {4}", moduleId,
                 MATCHUP_TEXTS[matchupValues[i]], MATCHUP_TEXTS[matchupValues[i + 1]], MATCHUP_TEXTS[matchupValues[i + 2]], MATCHUP_TEXTS[matchupValues[i + 3]]);
         }
 
 
         // Chooses a random tile to place in the grid
-        revealed = UnityEngine.Random.Range(0, 8);
+        revealed = UnityEngine.Random.Range(0, TypeDisplayScreens.Length);
         selectedTypes[revealed] = solutionTypes[revealed];
         TypeDisplayScreens[revealed].material = TypeMaterials[solutionTypes[revealed]];
         screenLocked[revealed] = true;
@@ -250,15 +228,12 @@ public class MatchupChart : MonoBehaviour
 
 
     // Arrow button pressed
-    private void ArrowButtonPressed(int i)
-    {
+    private void ArrowButtonPressed(int i) {
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, gameObject.transform);
         Arrows[i].AddInteractionPunch(0.25f);
 
-        if (canPress)
-        {
-            if (i == 0)
-            { // Left
+        if (canPress) {
+            if (i == 0) { // Left
                 selectedIndex--;
                 if (selectedIndex < 0)
                     selectedIndex += TYPE_SELECTION[typeTable].Length;
@@ -266,8 +241,7 @@ public class MatchupChart : MonoBehaviour
                 UpdateInputDisplay();
             }
 
-            else
-            { // Right
+            else { // Right
                 selectedIndex++;
                 selectedIndex %= TYPE_SELECTION[typeTable].Length;
 
@@ -277,16 +251,13 @@ public class MatchupChart : MonoBehaviour
     }
 
     // Type screen pressed
-    private void TypeDisplayPressed(int i)
-    {
+    private void TypeDisplayPressed(int i) {
         Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, gameObject.transform);
         TypeDisplays[i].AddInteractionPunch(0.5f);
 
-        if (canPress && !moduleSolved && !screenLocked[i])
-        {
+        if (canPress && !moduleSolved && !screenLocked[i]) {
             // Removes a type from the screen
-            if (selectedTypes[i] != NO_TYPE)
-            {
+            if (selectedTypes[i] != NO_TYPE) {
                 typesEntered--;
                 Debug.LogFormat("[Matchup Chart #{0}] Removed the {1} type from screen {2}. Currenly entered types: {3}",
                     moduleId, TYPE_NAMES[selectedTypes[i]], NameDisplay(i), typesEntered);
@@ -296,30 +267,23 @@ public class MatchupChart : MonoBehaviour
             }
 
             // Tries to add a type to the screen
-            else
-            {
+            else {
                 var typeToAdd = TYPE_SELECTION[typeTable][selectedIndex];
                 var valid = true;
 
                 // Has type been used in the row/column already?
-                if (i > 3)
-                {
-                    for (int j = 4; j < 8; j++)
-                    {
-                        if (selectedTypes[j] == typeToAdd)
-                        {
+                if (i > 3) {
+                    for (int j = 4; j < 8; j++) {
+                        if (selectedTypes[j] == typeToAdd) {
                             valid = false;
                             break;
                         }
                     }
                 }
 
-                else
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        if (selectedTypes[j] == typeToAdd)
-                        {
+                else {
+                    for (int j = 0; j < 4; j++) {
+                        if (selectedTypes[j] == typeToAdd) {
                             valid = false;
                             break;
                         }
@@ -327,26 +291,20 @@ public class MatchupChart : MonoBehaviour
                 }
 
                 // Can the type fit into the grid?
-                if (i > 3)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
+                if (i > 3) {
+                    for (int j = 0; j < 4; j++) {
                         var foundMatchup = TYPE_CHART[typeToAdd][selectedTypes[j]];
-                        if (foundMatchup != -1 && foundMatchup != matchupValues[(i - 4) * 4 + j])
-                        {
+                        if (foundMatchup != -1 && foundMatchup != matchupValues[(i - 4) * 4 + j]) {
                             valid = false;
                             break;
                         }
                     }
                 }
 
-                else
-                {
-                    for (int j = 4; j < 8; j++)
-                    {
+                else {
+                    for (int j = 4; j < 8; j++) {
                         var foundMatchup = TYPE_CHART[selectedTypes[j]][typeToAdd];
-                        if (foundMatchup != -1 && foundMatchup != matchupValues[(j - 4) * 4 + i])
-                        {
+                        if (foundMatchup != -1 && foundMatchup != matchupValues[(j - 4) * 4 + i]) {
                             valid = false;
                             break;
                         }
@@ -354,8 +312,7 @@ public class MatchupChart : MonoBehaviour
                 }
 
                 // Success
-                if (valid)
-                {
+                if (valid) {
                     typesEntered++;
                     Debug.LogFormat("[Matchup Chart #{0}] Successfully added the {1} type to screen {2}. Currenly entered types: {3}",
                         moduleId, TYPE_NAMES[typeToAdd], NameDisplay(i), typesEntered);
@@ -364,8 +321,7 @@ public class MatchupChart : MonoBehaviour
                     TypeDisplayScreens[i].material = TypeMaterials[typeToAdd];
 
                     // All screens have been entered
-                    if (typesEntered >= 8)
-                    {
+                    if (typesEntered >= 8) {
                         Debug.LogFormat("[Matchup Chart #{0}] All types have been added successfully! Module solved!", moduleId);
                         Audio.PlaySoundAtTransform("pokeball_catch", transform);
                         moduleSolved = true;
@@ -374,8 +330,7 @@ public class MatchupChart : MonoBehaviour
                 }
 
                 // Failure
-                else
-                {
+                else {
                     Debug.LogFormat("[Matchup Chart #{0}] Could not add the {1} type to screen {2}. Strike!",
                         moduleId, TYPE_NAMES[typeToAdd], NameDisplay(i));
 
@@ -387,16 +342,13 @@ public class MatchupChart : MonoBehaviour
 
 
     // Updates the screen on the input display
-    private void UpdateInputDisplay()
-    {
+    private void UpdateInputDisplay() {
         InputDisplayScreen.material = TypeMaterials[TYPE_SELECTION[typeTable][selectedIndex]];
     }
 
     // Returns a screen name for logging
-    private string NameDisplay(int i)
-    {
-        switch (i)
-        {
+    private string NameDisplay(int i) {
+        switch (i) {
             case 1: return "Column-2";
             case 2: return "Column-3";
             case 3: return "Column-4";
@@ -411,7 +363,7 @@ public class MatchupChart : MonoBehaviour
     // Twitch Plays by Quinn Wuest
 
 #pragma warning disable 0414
-    private readonly string TwitchHelpMessage = "!{0} type Rock [Set the display to the specified Pokémon type.";
+    private readonly string TwitchHelpMessage = "!{0} type Rock [Set the display to the specified Pokémon type. | !{0} column 1 [Select the display at Column 1 to the set Pokémon type. | Use column/row and numbers 1-4.";
 #pragma warning restore 0414
 
     private IEnumerator ProcessTwitchCommand(string command)
